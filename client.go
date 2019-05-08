@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/astaxie/beego/logs"
+	"github.com/pydr/tools-golang"
 	"io/ioutil"
 	"net/http"
 	"time"
-	"turing/utils/tools"
 )
 
 func NewPaypalClient(clientId, secret, apiBase string) *Client {

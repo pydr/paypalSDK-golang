@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/astaxie/beego/logs"
+	tools "github.com/pydr/tools-golang"
 	"io/ioutil"
 	"net/http"
-	"turing/utils/tools"
 )
 
 // 验证webhook 有效性
