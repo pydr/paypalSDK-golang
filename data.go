@@ -19,6 +19,10 @@ type (
 		HttpClient   *http.Client
 		TokenExpires time.Time
 		Curreny      float64
+		Account      string // 收款方paypal帐号
+		Brand        string // 收款方名称
+		ReturnUrl    string // 支付页面url
+		CancelUrl    string // 取消支付按钮url
 	}
 
 	TokenInfo struct {

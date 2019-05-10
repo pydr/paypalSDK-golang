@@ -12,7 +12,7 @@ import (
 )
 
 // 创建订单
-func (c *Client) CreateOrder(intent, currencyCode, value, paypalAccount, brandName, returnUrl, cancelUrl string) *CreatedOrderData {
+func (c *Client) CreateOrder(intent, currencyCode, value string) *CreatedOrderData {
 	var ret CreatedOrderData
 
 	url := c.APIBase + "/v2/checkout/orders"
@@ -30,14 +30,14 @@ func (c *Client) CreateOrder(intent, currencyCode, value, paypalAccount, brandNa
 	}
 
 	appInfo := &ApplicationContext{
-		BrandName:  brandName,
+		BrandName:  c.Brand,
 		UserAction: "PAY_NOW",
-		ReturnUrl:  returnUrl,
-		CancelUrl:  cancelUrl,
+		ReturnUrl:  c.ReturnUrl,
+		CancelUrl:  c.CancelUrl,
 	}
 
 	payee := &Payee{
-		Email: paypalAccount,
+		Email: c.Account,
 	}
 
 	var amountList []*AmountInfo

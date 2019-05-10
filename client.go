@@ -10,13 +10,17 @@ import (
 	"time"
 )
 
-func NewPaypalClient(clientId, secret, apiBase string) *Client {
+func NewPaypalClient(clientId, secret, apiBase, account, brand, returnUrl, cancelUrl string) *Client {
 
 	client := &Client{
 		ClientId:   clientId,
 		Secret:     secret,
 		APIBase:    apiBase,
 		HttpClient: &http.Client{},
+		Account:    account,
+		Brand:      brand,
+		ReturnUrl:  returnUrl,
+		CancelUrl:  cancelUrl,
 	}
 
 	return client
