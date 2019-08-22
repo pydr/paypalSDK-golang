@@ -3,14 +3,14 @@ package paypal
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/astaxie/beego/logs"
-	tools "github.com/pydr/tools-golang"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/pydr/tools-golang"
 )
 
 // 验证webhook 有效性
-func (c *Client) VerifyWebhook(transmissionId, transmissionTime, certUrl, authAlgo, transmissionSig, webhookId string, webhookEvent *WebhookEvent) bool {
+func (c *Client) VerifyWebhook(transmissionId, transmissionTime, certUrl, authAlgo, transmissionSig, webhookId string, webhookEvent *WebhookEvent) (bool, error) {
 	url := c.APIBase + "/v1/notifications/verify-webhook-signature"
 
 	verifyData := WebhookVerifyData{
@@ -25,30 +25,22 @@ func (c *Client) VerifyWebhook(transmissionId, transmissionTime, certUrl, authAl
 
 	data, err := json.Marshal(verifyData)
 	if err != nil {
-		logs.Error("params error")
-		return false
+		return false, err
 	}
 
-	logs.Warn(string(data))
 	req, err := http.NewRequest("POST", url, bytes.NewReader(data))
 	if err != nil {
-		logs.Error("make request failed: ", err)
-		return false
+		return false, err
 	}
-
 	req.Header.Set("Authorization", c.Token.TokenType+" "+c.Token.AccessToken)
 	req.Header.Set("Content-Type", "application/json")
-
 	resq, result := tools.Request(c.HttpClient, req, 3)
 	if !result {
-		logs.Error("call api failed.")
-		return false
+		return false, err
 	}
 
 	defer resq.Body.Close()
-
 	body, err := ioutil.ReadAll(resq.Body)
-	logs.Warn(string(body))
 
 	type retData struct {
 		VerificationStatus string `json:"verification_status"`
@@ -57,14 +49,13 @@ func (c *Client) VerifyWebhook(transmissionId, transmissionTime, certUrl, authAl
 	var ret retData
 	err = json.Unmarshal(body, &ret)
 	if err != nil {
-		logs.Error("parse json data failed: ", err)
-		return false
+		return false, err
 	}
 
 	if ret.VerificationStatus != "SUCCESS" {
-		return false
+		return false, nil
 	}
 
-	return true
+	return true, nil
 
 }

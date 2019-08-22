@@ -3,11 +3,11 @@ package paypal
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/astaxie/beego/logs"
-	"github.com/pydr/tools-golang"
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	"github.com/pydr/tools-golang"
 )
 
 func NewPaypalClient(clientId, secret, apiBase, account, brand, returnUrl, cancelUrl string) *Client {
@@ -26,48 +26,40 @@ func NewPaypalClient(clientId, secret, apiBase, account, brand, returnUrl, cance
 	return client
 }
 
-func (c *Client) GetAccessToken() {
+func (c *Client) GetAccessToken() error {
 
 	var ret TokenInfo
 
 	url := c.APIBase + "/v1/oauth2/token"
 	data := bytes.NewBuffer([]byte("grant_type=client_credentials"))
-
 	req, err := http.NewRequest("POST", url, data)
 	if err != nil {
-		logs.Error("make request failed: ", err)
-		return
+		return err
 	}
-
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.SetBasicAuth(c.ClientId, c.Secret)
-
 	resp, result := tools.Request(c.HttpClient, req, 3)
 	if !result {
-		logs.Error("call api failed: ", err)
-		return
+		return err
 	}
 
 	defer resp.Body.Close()
-
 	body, err := ioutil.ReadAll(resp.Body)
 	err = json.Unmarshal(body, &ret)
 	if err != nil {
-		logs.Error("parse json data failed: ", err)
-		return
+		return err
 	}
 
 	c.Token = &ret
 	c.TokenExpires = time.Now().Add(time.Duration(ret.ExpiresIn) * time.Second)
 
-	return
+	return nil
 }
 
 func (c *Client) UpdateAccessToken() {
 	for {
 		timeout := c.TokenExpires.Sub(time.Now()) - time.Duration(10)
 		<-time.After(timeout)
-		logs.Info("更新paypal token")
 		c.GetAccessToken()
 	}
 }
